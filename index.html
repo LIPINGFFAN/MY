@@ -1,88 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <!-- 核心：让魅族浏览器识别为「WebApp」，直接隐藏工具栏 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes"> <!-- 标记为WebApp -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- 状态栏透明 -->
-  <meta name="browser-mode" content="fullscreen"> <!-- 魅族强制全屏（关键） -->
-  <meta name="theme-color" content="#000"> <!-- 统一主题色，增强WebApp识别 -->
-  <title>打开即隐藏工具栏</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    /* 关键：让页面占满整个屏幕（包括状态栏区域），无空隙 */
-    html, body {
-      height: 100vh; /* 强制占满视口高度 */
-      overflow-x: hidden;
-      overflow-y: auto !important; /* 内容超出时可滚动，但工具栏不显示 */
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-      position: fixed; /* 固定布局，欺骗浏览器进入App模式 */
-      top: 0;
-      left: 0;
-      width: 100%;
-    }
-    /* 内容容器：高度自适应，超出可滚动 */
-    .page-container {
-      min-height: 100%;
-      padding: 20px;
-      font-size: 18px;
-      line-height: 2;
-      padding-bottom: 20px; /* 避免底部内容被滚动条遮挡 */
-    }
-    .header { text-align: center; margin-bottom: 30px; }
-  </style>
+    <meta charset="UTF-8">
+    <!-- 魅族浏览器核心适配：viewport-fit=cover + 禁止缩放 + 固定视口宽度 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- 隐藏苹果/安卓浏览器默认的导航栏暗示 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- 关键：禁止浏览器识别为应用模式（避免横屏），强制竖屏 -->
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <title>魅族16s 工具栏自动隐藏Demo</title>
+    <style>
+        /* 核心：占满整个可视区域（包括浏览器的安全区），无滚动条 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            /* 关键：用100%而非100vh，避免触发系统全屏，仅触发网页沉浸式 */
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* 禁止滚动，强化沉浸式感知 */
+            background: #f8f8f8;
+        }
+        /* 内容容器：适配魅族的安全区，避免内容被状态栏遮挡 */
+        .content {
+            padding: 20px;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            text-align: center;
+            height: calc(100% - 40px);
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-  <div class="page-container">
-    <div class="header">
-      <h1>打开页面即无工具栏</h1>
-    </div>
     <div class="content">
-      <p>无需滑动，工具栏已永久隐藏！</p>
-      <p>内容1</p><p>内容2</p><p>内容3</p><p>内容4</p><p>内容5</p>
-      <p>内容6</p><p>内容7</p><p>内容8</p><p>内容9</p><p>内容10</p>
-      <p>内容11</p><p>内容12</p><p>内容13</p><p>内容14</p><p>内容15</p>
-      <p>内容16</p><p>内容17</p><p>内容18</p><p>内容19</p><p>内容20</p>
-      <p>内容21</p><p>内容22</p><p>内容23</p><p>内容24</p><p>内容25</p>
+        <h2>魅族16s 工具栏自动隐藏测试</h2>
+        <p>打开后底部工具栏应自动隐藏（无需点击）</p>
+        <p>当前状态：竖屏 | 无交互 | 仅隐藏工具栏</p>
     </div>
-  </div>
 
-  <script>
-    // 终极核心：强制浏览器进入全屏WebApp模式，直接隐藏工具栏
-    document.addEventListener('DOMContentLoaded', function() {
-      // 1. 立即滚动1px（触发浏览器WebApp模式识别）
-      window.scrollTo(0, 1);
-
-      // 2. 禁用所有可能让工具栏重新显示的行为
-      document.addEventListener('touchstart', e => e.touches.length > 1 && e.preventDefault(), { passive: false });
-      document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-      document.addEventListener('contextmenu', e => e.preventDefault(), { passive: false });
-
-      // 3. 监听窗口大小变化，重新锁定全屏状态（旋转屏幕后仍生效）
-      window.addEventListener('resize', function() {
-        window.scrollTo(0, 1);
-        document.body.style.height = '100vh';
-      }, { passive: true });
-    });
-
-    // 4. 兼容魅族部分机型：主动请求全屏（如果浏览器支持）
-    function requestFullscreen() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) { // Safari
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) { // IE/Edge
-        elem.msRequestFullscreen();
-      }
-    }
-
-    // 页面加载完成后尝试请求全屏（增强兼容性）
-    window.addEventListener('load', function() {
-      setTimeout(requestFullscreen, 50);
-    }, { passive: true });
-  </script>
+    <script>
+        // 辅助：强制页面高度占满，无任何全屏API调用（避免横屏）
+        window.onload = function() {
+            // 重置视口高度，适配魅族浏览器的沉浸式判断
+            document.documentElement.style.height = '100%';
+            document.body.style.height = '100%';
+            // 禁止任何缩放行为，强化沉浸式信号
+            window.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        };
+    </script>
 </body>
 </html>
